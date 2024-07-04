@@ -1,0 +1,6 @@
+
+public func main()
+{
+}
+
+main()
