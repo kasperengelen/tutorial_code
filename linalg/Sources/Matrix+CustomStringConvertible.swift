@@ -6,7 +6,7 @@ import Foundation
 extension Matrix: CustomStringConvertible where ElementType: CustomStringConvertible {
 
     /// Compatible with the \() operator.
-    var description: String {
+    public var description: String {
         // convert the elements of the matrix to strings column by column
         var colsWithStrings: [[String]] = []
         for col in 0..<self.nCols {

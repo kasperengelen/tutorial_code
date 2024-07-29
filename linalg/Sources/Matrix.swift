@@ -1,6 +1,6 @@
 
 /// Represents an n-by-m Matrix
-struct Matrix<ElementType> {
+public struct Matrix<ElementType> {
     /// Contents of the matrix
     public private(set) var elements: [ElementType]
 
