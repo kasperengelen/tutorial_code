@@ -1,0 +1,12 @@
+name = "FunctionDiff"
+uuid = "876653dc-bc1b-485c-95c5-59d65e9ef9e7"
+authors = ["Kasper Engelen"]
+version = "0.1.0"
+
+[deps]
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
+
+[compat]
+Plots = "=1.40.8"
+Polynomials = "=4.0.11"
