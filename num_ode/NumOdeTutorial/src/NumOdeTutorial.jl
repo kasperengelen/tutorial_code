@@ -1,6 +1,7 @@
 
 module NumOdeTutorial
 include("./ForwardEuler.jl")
+include("./ODELib.jl")
 
 function main()
     if length(ARGS) != 1
@@ -10,10 +11,10 @@ function main()
 
     exampleName = ARGS[1]
 
-    if exampleName == "forwardEulerExample1"
-        ForwardEuler.runExample1()
-    elseif exampleName == "forwardEulerExample2"
-        ForwardEuler.runExample2()
+    if exampleName == "forwardEulerStable"
+        NumOdeTutorial.solveAndPlotForwardEuler(getStableODEProblem(), [10, 20, 100, 2000], "./ForwardEulerStable.png")
+    elseif exampleName == "forwardEulerUnstable"
+        NumOdeTutorial.solveAndPlotForwardEuler(getUnstableODEProblem(), [5, 10, 50, 1000], "./ForwardEulerUnstable.png")
     else
         println("Invalid example name '$(exampleName)'.")
         exit(1)
@@ -26,4 +27,4 @@ if abspath(PROGRAM_FILE) == @__FILE__
     main()
 end
 
-end # module NumOdeTutorial
+end

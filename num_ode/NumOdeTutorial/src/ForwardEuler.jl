@@ -1,7 +1,8 @@
 
-module ForwardEuler
 
 using Plots
+
+include("./ODELib.jl")
 
 """
     solveForwardEuler(diffEq; y0::Float64, t0::Float64, tn::Float64, numSteps::Integer)
@@ -25,7 +26,7 @@ function solveForwardEuler(diffEq; y0::Float64, t0::Float64, tn::Float64, numSte
     # add initial condition to the list of output values
     funcVals = [(currentTime, currentVal)]
 
-    for i in 0:numSteps-1
+    for _ in 0:numSteps-1
         # apply forward Euler method formula y_i+1 = y_i + h * f(t_i, y_)
         currentVal = currentVal + stepSize * diffEq(currentTime, currentVal)
 
@@ -39,86 +40,30 @@ function solveForwardEuler(diffEq; y0::Float64, t0::Float64, tn::Float64, numSte
     return funcVals
 end
 
-"""
-    exampleODE1(t, y)
-
-Return the derivative `y'(t)` at function value `y` and time value `t`. 
-
-This is an unstable ODE. Source: https://www.math.umd.edu/~petersd/460/html/stableODEex.html
-"""
-function exampleODE1(t, y)
-    return y - sin(t) - cos(t) 
-end
 
 """
-    exampleODE2(t, y)
+    solveAndPlotForwardEuler(ivp::InitialValueProblem, stepCounts::Array{Int}, filename::String)
 
-Return the derivative `y'(t)` at function value `y` and time value `t`. 
-
-This is a stable ODE. Source: https://www.math.umd.edu/~petersd/460/html/stableODEex.html
+    Solve the specified IVP using the forward Euler method. The `stepCounts` argument is an array with different numbers
+    of steps that will be used. All trajectories, including the exact solution, will be plotted and stored in the specified file.
 """
-function exampleODE2(t, y)
-    return  -y - sin(t) + cos(t)
-end
+function solveAndPlotForwardEuler(ivp::InitialValueProblem, stepCounts::Vector{Int}, filename::String)
+    for numSteps in stepCounts
+        # solve for every step size and plot
+        functionValues = solveForwardEuler(ivp.diffEq, y0=ivp.initialValue, t0=ivp.initialTime, tn=ivp.endTime, numSteps=numSteps)
+        stepSize = (ivp.endTime - ivp.initialTime) / numSteps
+        if numSteps <= 200
+            plot!(functionValues, markershape = :auto, label="h=$(stepSize)")
+        else
+            plot!(functionValues, label="h=$(stepSize)")
+        end
+    end
 
-
-"""
-    runExample1()
-
-Run the example with `exampleODE1`.
-"""
-function runExample1()
-    initial_cond = 1.0
-    t0 = 0.0
-    tn = 5.0
-
-    functionValues = solveForwardEuler(exampleODE1, y0=initial_cond, t0=t0, tn=tn, numSteps=5)
-    plot(functionValues, markershape = :auto, label="h=$(tn/5)", 
-            title="y' = y - sin(t) - cos(t); y(0) = 1", ylabel="y", xlabel="t")
-    
-    functionValues = solveForwardEuler(exampleODE1, y0=initial_cond, t0=t0, tn=tn, numSteps=10)
-    plot!(functionValues, markershape = :auto, label="h=$(tn/10)")
-    
-    functionValues = solveForwardEuler(exampleODE1, y0=initial_cond, t0=t0, tn=tn, numSteps=50)
-    plot!(functionValues, markershape = :auto, label="h=$(tn/50)")
-    
-    functionValues = solveForwardEuler(exampleODE1, 
-    y0=initial_cond, t0=t0, tn=tn, numSteps=1000)
-    plot!(functionValues, label="h=$(tn/1000)")
-
-    plot!(cos, t0, tn, label="cos(t)", dpi=500)
-
-    savefig("./ForwardEuler1.png")
-end
-
-
-"""
-    runExample2()
-
-Run the example with `exampleODE2`.
-"""
-function runExample2()
-    initial_cond = 1.0
-    t0 = 0.0
-    tn = 10.0
-
-    functionValues = solveForwardEuler(exampleODE2, y0=initial_cond, t0=t0, tn=tn, numSteps=10)
-    plot(functionValues, markershape = :auto, label="h=$(tn/10)", 
-            title="y'= - y - sin(t) + cos(t); y(0) = 1", ylabel="y", xlabel="t")
-    
-    functionValues = solveForwardEuler(exampleODE2, 
-    y0=initial_cond, t0=t0, tn=tn, numSteps=20)
-    plot!(functionValues, markershape = :auto, label="h=$(tn/20)")
-    
-    functionValues = solveForwardEuler(exampleODE2, y0=initial_cond, t0=t0, tn=tn, numSteps=100)
-    plot!(functionValues, markershape = :auto, label="h=$(tn/100)")
-    
-    functionValues = solveForwardEuler(exampleODE2, y0=initial_cond, t0=t0, tn=tn, numSteps=2000)
-    plot!(functionValues, label="h=$(tn/2000)")
-
-    plot!(cos, t0, tn, label="cos(t)", dpi=500)
-
-    savefig("./ForwardEuler2.png")
+    if ivp.exactSolution !== nothing
+        # if an exact solution exists, we plot it
+        plot!(ivp.exactSolution, ivp.initialTime, ivp.endTime, label="Exact solution", dpi=500)
+    end
+    savefig(filename)
 end
 
 
@@ -126,6 +71,4 @@ end
 if abspath(PROGRAM_FILE) == @__FILE__
     runExample1()
     runExample2()
-end
-
 end
