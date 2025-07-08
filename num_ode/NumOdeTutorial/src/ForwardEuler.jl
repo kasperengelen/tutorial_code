@@ -42,7 +42,7 @@ end
 
 
 """
-    solveAndPlotForwardEuler(ivp::InitialValueProblem, stepCounts::Array{Int}, filename::String)
+    solveAndPlotForwardEuler(ivp::InitialValueProblem, stepCounts::Vector{Int}, filename::String)
 
     Solve the specified IVP using the forward Euler method. The `stepCounts` argument is an array with different numbers
     of steps that will be used. All trajectories, including the exact solution, will be plotted and stored in the specified file.
@@ -53,9 +53,9 @@ function solveAndPlotForwardEuler(ivp::InitialValueProblem, stepCounts::Vector{I
         functionValues = solveForwardEuler(ivp.diffEq, y0=ivp.initialValue, t0=ivp.initialTime, tn=ivp.endTime, numSteps=numSteps)
         stepSize = (ivp.endTime - ivp.initialTime) / numSteps
         if numSteps <= 200
-            plot!(functionValues, markershape = :auto, label="h=$(stepSize)")
+            plot!(functionValues, markershape = :auto, label="h=$(stepSize)", dpi=500)
         else
-            plot!(functionValues, label="h=$(stepSize)")
+            plot!(functionValues, label="h=$(stepSize)", dpi=500)
         end
     end
 
@@ -64,11 +64,4 @@ function solveAndPlotForwardEuler(ivp::InitialValueProblem, stepCounts::Vector{I
         plot!(ivp.exactSolution, ivp.initialTime, ivp.endTime, label="Exact solution", dpi=500)
     end
     savefig(filename)
-end
-
-
-# run the program
-if abspath(PROGRAM_FILE) == @__FILE__
-    runExample1()
-    runExample2()
 end
