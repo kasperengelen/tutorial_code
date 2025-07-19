@@ -16,11 +16,11 @@ function solveAndPlot(;ivp::InitialValueProblem, solvers::Array{IVPSolver}, file
     for solver in solvers
         functionValues = solver.solver(ivp)
 
-        if length(functionValues) <= 200
-            plot!(functionValues, markershape = :none, label=solver.name, dpi=500, title=ivp.name)
+        if length(functionValues) <= 100
+            plot!(functionValues, markershape = :auto, label=solver.name, dpi=500, title=ivp.name)
         else
             # plot different markers if there are too many points
-            plot!(functionValues, label=solver.name, dpi=500, title=ivp.name)
+            plot!(functionValues, markershape = :none, label=solver.name, dpi=500, title=ivp.name)
         end
     end
 
