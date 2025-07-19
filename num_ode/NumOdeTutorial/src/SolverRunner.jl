@@ -19,7 +19,7 @@ function solveAndPlot(;ivp::InitialValueProblem, solvers::Array{IVPSolver}, file
         if length(functionValues) <= 100
             plot!(functionValues, markershape = :auto, label=solver.name, dpi=500, title=ivp.name)
         else
-            # plot different markers if there are too many points
+            # plot no markers if there are too many points
             plot!(functionValues, markershape = :none, label=solver.name, dpi=500, title=ivp.name)
         end
     end
