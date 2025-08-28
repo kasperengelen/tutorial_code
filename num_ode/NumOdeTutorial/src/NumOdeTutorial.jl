@@ -5,6 +5,7 @@ include("./ODELib.jl")
 include("./SolverRunner.jl")
 include("./ForwardEuler.jl")
 include("./BackwardEuler.jl")
+include("./RungeKutta.jl")
 
 """
     main()
@@ -58,6 +59,26 @@ function main()
     elseif exampleName == "compareForwardBackwardEulerSimpleStiff"
         NumOdeTutorial.solveAndPlot(ivp=getStiffODEProblem(), solvers=[BackwardEuler(0.04), ForwardEuler(0.04)], filename="./CompareForwardBackwardEulerSimpleStiff.png")
 
+    elseif exampleName == "compareRK3"
+        NumOdeTutorial.solveAndPlot(ivp=getNonStiffODE(), solvers=[
+            ForwardEuler(0.5), RK2Midpoint(0.5), RK3Kutta(0.5), ForwardEuler(0.5/3), 
+            ], filename="./CompareRK3.png")
+
+    elseif exampleName == "compareRK4"
+        NumOdeTutorial.solveAndPlot(ivp=getNonStiffODE(), solvers=[
+            ForwardEuler(0.5/4), RK4Kutta(0.1), RK4Kutta(0.5)
+            ], filename="./CompareRK4.png")
+
+    elseif exampleName == "compareRKCosineStable"
+        NumOdeTutorial.solveAndPlot(ivp=getStableODEProblem(), solvers=[
+            ForwardEuler(0.5), ForwardEuler(0.1), RK2Midpoint(0.5), RK3Kutta(0.5), RK4Kutta(0.5)
+        ], filename="./CompareRKCosineStable.png")
+
+    elseif exampleName == "compareRKCosineUnstable"
+        NumOdeTutorial.solveAndPlot(ivp=getUnstableODEProblem(), solvers=[
+            ForwardEuler(0.5), ForwardEuler(0.1), RK2Midpoint(0.5), RK3Kutta(0.5), RK4Kutta(0.5)
+        ], filename="./CompareRKCosineUnstable.png")
+        
     else
         println("Invalid example name '$(exampleName)'.")
         exit(1)

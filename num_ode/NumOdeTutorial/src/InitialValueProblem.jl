@@ -2,7 +2,7 @@
 """
     Represents an initial value problem, including:
         - the human-readable name of the ODE,
-        - the ODE,
+        - the ODE f(t,y),
         - the initial value,
         - the initial time, associated with the initial value,
         - the end time, upon which the solver should stop,

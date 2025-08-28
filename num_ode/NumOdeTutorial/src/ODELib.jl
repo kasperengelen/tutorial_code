@@ -10,7 +10,7 @@ include("./InitialValueProblem.jl")
 function getStableODEProblem()::InitialValueProblem
     ode(t, y) = -y - sin(t) + cos(t)
     return InitialValueProblem(
-        "Stable ODE",
+        "Stable cosine ODE",
         ode,
         1.0,  # y0
         0.0,  # t0
@@ -29,7 +29,7 @@ end
 function getUnstableODEProblem()::InitialValueProblem
     ode(t, y) = y - sin(t) - cos(t) 
     return InitialValueProblem(
-        "Unstable ODE",
+        "Unstable cosine ODE",
         ode,
         1.0, # y0
         0.0, # t0
@@ -108,5 +108,25 @@ function getRiccatiODEProblem()::InitialValueProblem
         0.0, # t0
         1.0, # tf
         nothing
+    )
+end
+
+
+"""
+    A non-stiff ODE suitable for explicit solvers.
+
+    Source: https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Derivation_of_the_Runge%E2%80%93Kutta_fourth-order_method
+"""
+function getNonStiffODE()
+    ode(t, y) = (sin(t))^2 * y
+    init = 1.0
+    sol(t) = exp((1/2) * (t - cos(t) * sin(t)))
+    return InitialValueProblem(
+        "Non-stiff ODE",
+        ode,
+        init, # x0
+        0.0, # t0
+        3.0, # tf
+        sol
     )
 end
