@@ -11,7 +11,7 @@ using LinearAlgebra
     are the RK matrix `a`, the weights `b`, and the nodes `c`, the number of stages `numStages`,
     and the step-size `stepSize`.
 """
-function solveRungeKuttaExplicit(;
+function solveRungeKuttaExplicit(; # force caller to use keywords
     ivp::InitialValueProblem, stepSize::Float64, 
     numStages::Int64, 
     a::Matrix{Float64}, b::Vector{Float64}, c::Vector{Float64}
@@ -62,7 +62,7 @@ end
     the RK matrix `a`, the weights `b`, and the nodes `c`, the number 
     of stages `numStages`, and the step-size `stepSize`.
 """
-function rungeKuttaStepExplicit(;
+function rungeKuttaStepExplicit(; # force caller to use keywords
     ivp::InitialValueProblem, stepSize::Float64, 
     currentTime::Float64, currentVal::Float64, 
     numStages::Int64, 
