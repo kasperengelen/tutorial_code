@@ -182,3 +182,45 @@ function RK2Ralston(stepSize::Float64)
         "RK2 Ralston h=$(stepSize)"
     )
 end
+
+
+"""
+    Fourth-order Runge-Kutta method with Fehlberg coefficients.
+"""
+function RK4Fehlberg(stepSize::Float64)
+    return IVPSolver(
+        ivp -> solveRungeKuttaExplicit(ivp=ivp, stepSize=stepSize, numStages=6, 
+        a=[
+                 0          0          0          0          0     0;
+                 1/4        0          0          0          0     0;
+                 3/32       9/32       0          0          0     0;
+                 1932/2197 -7200/2197  7296/2197  0          0     0;
+                 439/216   -8          3680/513  -845/4101   0     0;
+                -8/27       2         -3544/2565  1859/4104 -11/40 0
+            ],
+        b=[25/216, 0, 1408/2565,  2197/4101,   -1/5,  0],
+        c=[0.0, 1/4, 3/8, 12/13, 1, 1/2]),
+        "RK4 Fehlberg h=$(stepSize)"
+    )
+end
+
+
+"""
+    Fifth-order Runge-Kutta method with Fehlberg coefficients.
+"""
+function RK5Fehlberg(stepSize::Float64)
+    return IVPSolver(
+        ivp -> solveRungeKuttaExplicit(ivp=ivp, stepSize=stepSize, numStages=6, 
+        a=[
+                 0          0          0          0          0     0;
+                 1/4        0          0          0          0     0;
+                 3/32       9/32       0          0          0     0;
+                 1932/2197 -7200/2197  7296/2197  0          0     0;
+                 439/216   -8          3680/513  -845/4101   0     0;
+                -8/27       2         -3544/2565  1859/4104 -11/40 0
+            ],
+        b=[16/135, 0, 6656/12825, 28561/56430, -9/50, 2/55],
+        c=[0.0, 1/4, 3/8, 12/13, 1, 1/2]),
+        "RK5 Fehlberg h=$(stepSize)"
+    )
+end
