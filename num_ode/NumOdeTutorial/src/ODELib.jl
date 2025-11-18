@@ -130,3 +130,73 @@ function getNonStiffODE()
         sol
     )
 end
+
+
+"""
+    ODE with some steep parts.
+
+    Source: https://tobydriscoll.net/fnc-julia/ivp/adaptive-rk.html
+"""
+function getDifficultODEForAdaptiveRK()
+    ode(t, y) = exp(t-y*sin(y))
+    init=0.0
+    return InitialValueProblem(
+        "IVP for Adaptive RK",
+        ode,
+        init,
+        0.0,
+        5.0,
+        nothing
+    )
+end
+
+
+"""
+    An "Abel equation of the first kind" that has easy as well as steep parts in the trajectory.
+
+    Source: https://stackoverflow.com/questions/67043427/how-to-perform-adaptive-step-size-using-runge-kutta-fourth-order-matlab
+"""
+function getAbelEquation()
+    ode(t, y) = 3*y-y^3 + 3*cos(t)
+    init=1.0
+    return InitialValueProblem(
+        "Abel ODE for adaptive RK",
+        ode,
+        init,
+        0.0,
+        14.0,
+        nothing
+    ) 
+end
+
+"""
+    An ODE for the Logisic equation.
+
+    Source: https://math.libretexts.org/Bookshelves/Calculus/Calculus_(OpenStax)/08%3A_Introduction_to_Differential_Equations/8.04%3A_The_Logistic_Equation
+
+    Arguments:
+        - `initPop`: the initial population,
+        - `capacity`: the number of individuals that can be supported by the ecosystem,
+        - `growthRate`: the rate at which the population grows.
+"""
+function getLogisticODE(;
+    initPop::Float64,
+    capacity::Float64,
+    growthRate::Float64
+)
+
+    p0 = initPop  # initial population
+    k = capacity  # max population
+    r = growthRate  # growth rate
+
+    ode(t, y) = r*y*(1-(y/k))
+    exact(t) = (p0*k*exp(r*t))/((k-p0) + p0*exp(r*t))
+    return InitialValueProblem(
+        "Logistic ODE (p0=$(p0), k=$(k), r=$(r))",
+        ode,
+        p0,
+        0.0,
+        100.0,
+        exact
+    ) 
+end
