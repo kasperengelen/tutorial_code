@@ -203,9 +203,51 @@ function getLogisticODE(;
         "Logistic ODE (p0=$(p0), k=$(k), r=$(r))",
         ode,
         [p0], # y0
-        0.0, # y0
-        100.0, # y0
+        0.0, # t0
+        100.0, # tf
         exact,
         ["Population"]
+    ) 
+end
+
+
+"""
+    function getLotkaVolterraODE(alpha::Float64, beta::Float64, gamma::Float64, delta::Float64)::InitialValueProblem
+
+    Source: https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations
+
+    Retrieve the Lotka-Volterra system of ODEs, which models a predator-prey population. 
+
+    x' = x(alpha - beta*y)
+    y' = y(-gamma + delta*x)
+    
+    The following parameters are required:
+    - `alpha`: prey population growth rate (relative to the prey population),
+    - `beta`: rate at which predators consume the prey,
+    - `gamma`: death rate of the predators,
+    - `delta`: growth rate of the predator population (relative to the prey population),
+    - `initPreyDensity`: The population density of the prey.
+    - `initPredatorDensity`: The population density of the predators.
+"""
+function getLotkaVolterraODE(;
+    alpha::Float64,
+    beta::Float64,
+    gamma::Float64,
+    delta::Float64,
+    initPreyDensity::Float64,
+    initPredatorDensity::Float64
+)::InitialValueProblem
+    ode(t, y) = [
+        y[1]*(alpha - beta * y[2]),
+        y[2]*(-gamma + delta * y[1])
+    ]
+    return InitialValueProblem(
+        "Lotka-Volterra (alpha=$(alpha), beta=$(beta), gamma=$(gamma), delta=$(delta))",
+        ode,
+        [initPreyDensity, initPredatorDensity], # y0
+        0.0, # t0
+        100.0, # tf
+        nothing,
+        ["Prey density", "Predator Density"]
     ) 
 end
