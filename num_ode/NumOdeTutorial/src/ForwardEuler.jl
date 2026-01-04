@@ -1,23 +1,21 @@
 
-include("./InitialValueProblem.jl")
-include("./IVPSolver.jl")
 
 """
     solveForwardEuler(;ivp::InitialValueProblem, stepSize::Float64)::Vector{Tuple{Float64,Float64}}
 
     Solve the specified IVP using the forward Euler method with the specified step-size.
     
-    At every step the function and time values are stored. The return value is a vector
-    of tuples `(t,y)`.
+    At every step the function and time values are stored.
 """
-function solveForwardEuler(;ivp::InitialValueProblem, stepSize::Float64)::Vector{Tuple{Float64,Float64}}
+function solveForwardEuler(;ivp::InitialValueProblem, stepSize::Float64)::IVPSolution
 
     # set some values
-    currentVal::Float64 = ivp.initialValue
+    currentVal::Vector{Float64} = ivp.initialValue
     currentTime::Float64 = ivp.initialTime
 
     # add initial condition to the list of output values
-    funcVals = [(currentTime, currentVal)]
+    timeVals::Vector{Float64} = [currentTime]
+    funcVals::Vector{Vector{Float64}} = [currentVal]
 
     while (currentTime + stepSize) <= ivp.endTime
         # apply forward Euler method formula y_i+1 = y_i + h * f(t_i, y_)
@@ -27,10 +25,11 @@ function solveForwardEuler(;ivp::InitialValueProblem, stepSize::Float64)::Vector
         currentTime += stepSize
 
         # store value (t_i+1, y_i+1)
-        push!(funcVals, (currentTime, currentVal))
+        push!(timeVals, currentTime)
+        push!(funcVals, currentVal)
     end
     
-    return funcVals
+    return IVPSolution(timeVals, funcVals)
 end
 
 

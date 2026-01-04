@@ -2,9 +2,6 @@
 using Plots
 using NonlinearSolve
 
-include("./InitialValueProblem.jl")
-include("./IVPSolver.jl")
-
 """
     solveBackwardEuler(;ivp::InitialValueProblem, stepSize::Float64)::Vector{Tuple{Float64,Float64}}
 
@@ -12,30 +9,32 @@ include("./IVPSolver.jl")
     The `RobustMultiNewton` solver from the `NonlinearSolve.jl` package is used to
     solve the non-linear equations resulting from the backward Euler formula.
     
-    At every step the function and time values are stored. The return value is a vector
-    of tuples `(t,y)`.
+    At every step the function and time values are stored.
 """
-function solveBackwardEuler(;ivp::InitialValueProblem, stepSize::Float64)::Vector{Tuple{Float64,Float64}}
+function solveBackwardEuler(;ivp::InitialValueProblem, stepSize::Float64)::IVPSolution
 
     # set some values
-    currentVal::Float64 = ivp.initialValue
+    currentVal::Vector{Float64} = ivp.initialValue
     currentTime::Float64 = ivp.initialTime
 
     # add initial condition to the list of output values
-    funcVals = [(currentTime, currentVal)]
+    timeVals::Vector{Float64} = [currentTime]
+    funcVals::Vector{Vector{Float64}} = [currentVal]
 
     while (currentTime + stepSize) <= ivp.endTime
         # increase time from t_i to t_i+1
         nextTime = currentTime + stepSize
 
+
         currentVal = solveNonLinearEquation(ivp.diffEq, currentTime, currentVal, nextTime, stepSize)
         currentTime = nextTime
 
         # store value (t_i+1, y_i+1)
-        push!(funcVals, (currentTime, currentVal))
+        push!(timeVals, currentTime)
+        push!(funcVals, currentVal)
     end
 
-    return funcVals
+    return IVPSolution(timeVals, funcVals)
 end
 
 
@@ -46,7 +45,7 @@ end
     for the specified system of differential equations. `currentValue` is
     the value y_i. `currentTime` is the current timestep. The solution is the value y_{i+1}.
 """
-function solveNonLinearEquation(diffEq::Function, currentTime::Float64, currentValue::Float64, nextTime::Float64, stepSize::Float64)::Float64
+function solveNonLinearEquation(diffEq::Function, currentTime::Float64, currentValue::Vector{Float64}, nextTime::Float64, stepSize::Float64)::Vector{Float64}
     # use forward Euler to obtain the starting value for our solver
     # forward Euler method formula y_i+1 = y_i + h * f(t_i, y_i)
     forwardEuler(currentValue) = currentValue + stepSize * diffEq(currentTime, currentValue)

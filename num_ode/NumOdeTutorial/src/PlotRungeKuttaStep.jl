@@ -33,31 +33,33 @@ function plotRungeKuttaStep(;
         a::Matrix{Float64}, b::Vector{Float64}, c::Vector{Float64}, numStages::Int64, 
         ode::Function,  # f(t,y)
         exactSolution::Function, # y(t)
-        currentTime::Float64, currentVal::Float64, stepSize::Float64,
+        currentTime::Float64, currentVal::Vector{Float64}, stepSize::Float64,
         tMin::Float64, tMax::Float64,
         yMin::Float64, yMax::Float64,
-        filename::String
+        filename::String,
+        dimensionToPlot::Int64
     )
 
     # plot the vector field
     f_t(t, y) = 1
-    f_y(t, y) = ode(t, y)
+    f_y(t, y) = ode(t, y)[dimensionToPlot]
     f(x) = Point2f(f_t(x[1], x[2]), f_y(x[1], x[2]))
     fig, ax, _ = streamplot(f, tMin..tMax, yMin..yMax, arrow_size = 1, linewidth = 0.5, colormap=([:black]))
 
     # plot the exact solution to the ode
     if exactSolution !== nothing
-        lines!(fig[1, 1], tMin..tMax, exactSolution, color = :red)
+        exactSolInDimension(t) = exactSolution(t)[dimensionToPlot]
+        lines!(fig[1, 1], tMin..tMax, exactSolInDimension, color = :red)
     end
 
     # initialise k1
-    k_vals::Vector{Float64} = []
+    k_vals::Vector{Vector{Float64}} = [ode(currentTime, currentVal)]
 
     sample_points_to_plot_t = []
     sample_points_to_plot_y = []
 
     # iterate
-    for s in 1:numStages
+    for s in 2:numStages
         # compute time value at which we sample the ODE
         time_val = currentTime + c[s] * stepSize
 
@@ -67,18 +69,25 @@ function plotRungeKuttaStep(;
             throw(ArgumentError("Error: this function only supports explicit 
                 RK methods, but an implicit coefficient matrix was passed."))
         end
-        func_val_approx = currentVal + stepSize * dot(a_vec, k_vals)
+
+        if length(a_vec) != length(k_vals)
+            throw(DimensionMismatch("Error: `a_vec` and `k_vals` must have the same number of elements!"))
+        end
+
+        func_val_approx = currentVal + stepSize * sum(a_vec .* k_vals)
 
         # evaluate ODE
-        k_val = ode(time_val, func_val_approx)
+        k_val = ode(time_val, func_val_approx)  
 
-        # plot point at (time_val, func_val_approx)
+        # plot point at (time_val, func_val_approx[dimensionToPlot])
         push!(sample_points_to_plot_t, time_val)
-        push!(sample_points_to_plot_y, func_val_approx)
+        push!(sample_points_to_plot_y, func_val_approx[dimensionToPlot])
+
+        k_val_in_dim = k_val[dimensionToPlot]
 
         # plot slope around the point that visualises the approximate derivative
         line_points_t = [time_val - 0.1*stepSize, time_val + 0.1*stepSize]
-        line_points_y = [func_val_approx - 0.1*stepSize*k_val, func_val_approx + 0.1*stepSize*k_val]
+        line_points_y = [func_val_approx[dimensionToPlot] - 0.1*stepSize*k_val_in_dim, func_val_approx[dimensionToPlot] + 0.1*stepSize*k_val_in_dim]
         lines!(line_points_t, line_points_y, label = "k$(s)")
 
         push!(k_vals, k_val)
@@ -88,11 +97,17 @@ function plotRungeKuttaStep(;
     scatter!(sample_points_to_plot_t, sample_points_to_plot_y)
 
     # plot the initial point and the next point determined by the Runge kutta algorithm
-    scatter!([currentTime], [currentVal], 
+    # Note that these are all vectors. As such, we always take the dimension given by `dimensionToPlot`.
+    scatter!([currentTime], [currentVal[dimensionToPlot]], 
                 marker=:diamond, markersize = 15, color=:red, label="Initial")
-    scatter!([currentTime + stepSize], [currentVal + stepSize * dot(b, k_vals)], 
+
+    RK_value::Float64 = (currentVal + stepSize * sum(b .* k_vals))[dimensionToPlot]
+    scatter!([currentTime + stepSize], [RK_value], 
                 marker=:diamond, markersize = 15, color=:black, label="RK$(numStages)")
-    scatter!([currentTime + stepSize], [currentVal + stepSize * k_vals[1]], 
+
+    # FE = only use 1st k value
+    FE_value::Float64 = (currentVal + stepSize * k_vals[1])[dimensionToPlot]
+    scatter!([currentTime + stepSize], [FE_value], 
                 marker=:diamond, markersize = 15, color=:green, label="FE")
 
     # store
@@ -107,7 +122,7 @@ end
 function plotExampleNonStiff()
     ivp = getNonStiffODE()
     currentTime=1.0
-    currentVal = ivp.exactSolution(currentTime)
+    currentVal::Vector{Float64} = ivp.exactSolution(currentTime)
     plotRungeKuttaStep(        
         a=[0 0 0 0; 1/2 0 0 0; 0 1/2 0 0; 0 0 1 0],
         b=[1/6, 1/3, 1/3, 1/6],
@@ -122,7 +137,8 @@ function plotExampleNonStiff()
         stepSize=1.0,
         ode=ivp.diffEq,
         exactSolution=ivp.exactSolution,
-        filename="rk4_kutta_nonstiff.png"
+        filename="rk4_kutta_nonstiff.png",
+        dimensionToPlot=1
     )
 end
 
@@ -133,7 +149,7 @@ end
 function plotExampleCosineStable()
     ivp=getStableODEProblem()
     currentTime=2.5
-    currentVal = ivp.exactSolution(currentTime)
+    currentVal::Vector{Float64} = ivp.exactSolution(currentTime)
     plotRungeKuttaStep(        
         a=[0 0 0 0; 1/2 0 0 0; 0 1/2 0 0; 0 0 1 0],
         b=[1/6, 1/3, 1/3, 1/6],
@@ -148,7 +164,8 @@ function plotExampleCosineStable()
         stepSize=1.5,
         ode=ivp.diffEq,
         exactSolution=ivp.exactSolution,
-        filename="rk4_kutta_cos.png"
+        filename="rk4_kutta_cos.png",
+        dimensionToPlot=1
     )
 end
 

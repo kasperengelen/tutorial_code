@@ -1,8 +1,4 @@
 
-
-include("./InitialValueProblem.jl")
-include("./IVPSolver.jl")
-
 using LinearAlgebra
 
 
@@ -39,7 +35,7 @@ function solveRungeKuttaAdaptiveExplicit(; # force caller to use keywords
     bLowerOrder::Vector{Float64}, 
     bHigherOrder::Vector{Float64}, 
     c::Vector{Float64}
-)::Vector{Tuple{Float64,Float64}}
+)::IVPSolution
     # check that the dimensions of a,b,c match the specified number of stages
     if size(a) != (numStages, numStages)
         throw(ArgumentError("Error: the number of stages does not correspond
@@ -62,11 +58,12 @@ function solveRungeKuttaAdaptiveExplicit(; # force caller to use keywords
     end
 
     # set some values
-    currentVal::Float64 = ivp.initialValue
+    currentVal::Vector{Float64} = ivp.initialValue
     currentTime::Float64 = ivp.initialTime
 
     # add initial condition to the list of output values
-    funcVals = [(currentTime, currentVal)]
+    timeVals::Vector{Float64} = [currentTime]
+    funcVals::Vector{Vector{Float64}} = [currentVal]
 
     # we begin with the maximum step size, for efficiency
     stepSize = initStepSize
@@ -95,10 +92,11 @@ function solveRungeKuttaAdaptiveExplicit(; # force caller to use keywords
         stepSize = usedStepSize
 
         # store next value
-        push!(funcVals, (currentTime, currentVal))
+        push!(timeVals, currentTime)
+        push!(funcVals, currentVal)
     end
 
-    return funcVals
+    return IVPSolution(timeVals, funcVals)
 end
 
 
@@ -134,7 +132,7 @@ end
 function _rungeKuttaStepAdaptiveExplicit_(; # force caller to use keywords
     ivp::InitialValueProblem, 
     currentTime::Float64, 
-    currentVal::Float64, 
+    currentVal::Vector{Float64}, 
     initStepSize::Float64,
     atol::Float64,
     minStepSize::Float64, 
@@ -147,7 +145,7 @@ function _rungeKuttaStepAdaptiveExplicit_(; # force caller to use keywords
     bLowerOrder::Vector{Float64}, 
     bHigherOrder::Vector{Float64}, 
     c::Vector{Float64},
-)::Tuple{Float64, Float64}
+)::Tuple{Vector{Float64}, Float64}
 
     stepSize = initStepSize
 
@@ -217,14 +215,14 @@ end
 function _rungeKuttaWithErrorEstFixedStep_(; # force caller to use keywords
     ivp::InitialValueProblem, 
     currentTime::Float64, 
-    currentVal::Float64, 
+    currentVal::Vector{Float64}, 
     numStages::Int64, 
     stepSize::Float64,
     a::Matrix{Float64}, 
     bLowerOrder::Vector{Float64}, 
     bHigherOrder::Vector{Float64}, 
     c::Vector{Float64}
-    )::Tuple{Float64, Float64}
+    )::Tuple{Vector{Float64}, Float64}
 
     # verify that the first row is zero
     if !iszero(a[1, 1:end])
@@ -232,7 +230,7 @@ function _rungeKuttaWithErrorEstFixedStep_(; # force caller to use keywords
             RK methods, but an implicit coefficient matrix was passed."))
     end
 
-    k_vals = [ivp.diffEq(currentTime, currentVal)]
+    k_vals::Vector{Vector{Float64}} = [ivp.diffEq(currentTime, currentVal)]
 
     # compute the different stages
     for s in 2:numStages
@@ -246,7 +244,7 @@ function _rungeKuttaWithErrorEstFixedStep_(; # force caller to use keywords
                 RK methods, but an implicit coefficient matrix was passed."))
         end
 
-        y_val = currentVal + stepSize * dot(a_vec, k_vals)
+        y_val::Vector{Float64} = currentVal + stepSize * sum(a_vec .* k_vals)
 
         # evaluate ODE
         k_val = ivp.diffEq(time_val, y_val)
@@ -255,10 +253,10 @@ function _rungeKuttaWithErrorEstFixedStep_(; # force caller to use keywords
     end
 
     # compute weighted sum
-    higherOrderEst = currentVal + stepSize * dot(bHigherOrder, k_vals)
-    lowerOrderEst = currentVal + stepSize * dot(bLowerOrder, k_vals)
+    higherOrderEst = currentVal + stepSize * sum(bHigherOrder .* k_vals)
+    lowerOrderEst = currentVal + stepSize * sum(bLowerOrder .* k_vals)
 
-    errorEst = abs(higherOrderEst - lowerOrderEst)
+    errorEst = norm(higherOrderEst - lowerOrderEst, Inf)
 
     return lowerOrderEst, errorEst
 end

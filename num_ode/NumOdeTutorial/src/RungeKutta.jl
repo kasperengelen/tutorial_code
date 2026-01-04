@@ -1,8 +1,4 @@
 
-
-include("./InitialValueProblem.jl")
-include("./IVPSolver.jl")
-
 using LinearAlgebra
 
 
@@ -15,7 +11,7 @@ function solveRungeKuttaExplicit(; # force caller to use keywords
     ivp::InitialValueProblem, stepSize::Float64, 
     numStages::Int64, 
     a::Matrix{Float64}, b::Vector{Float64}, c::Vector{Float64}
-)::Vector{Tuple{Float64,Float64}}
+)::IVPSolution
 
     # check that the dimensions of a,b,c match the specified order
     if size(a) != (numStages, numStages)
@@ -34,11 +30,12 @@ function solveRungeKuttaExplicit(; # force caller to use keywords
     end
 
     # set some values
-    currentVal::Float64 = ivp.initialValue
+    currentVal::Vector{Float64} = ivp.initialValue
     currentTime::Float64 = ivp.initialTime
 
     # add initial condition to the list of output values
-    funcVals = [(currentTime, currentVal)]
+    timeVals::Vector{Float64} = [currentTime]
+    funcVals::Vector{Vector{Float64}} = [currentVal]
 
     while (currentTime + stepSize) <= ivp.endTime
         # compute next value
@@ -48,10 +45,11 @@ function solveRungeKuttaExplicit(; # force caller to use keywords
         currentTime = currentTime + stepSize
 
         # store next value
-        push!(funcVals, (currentTime, currentVal))
+        push!(timeVals, currentTime)
+        push!(funcVals, currentVal)
     end
 
-    return funcVals
+    return IVPSolution(timeVals, funcVals)
 end
 
 
@@ -64,9 +62,9 @@ end
 """
 function rungeKuttaStepExplicit(; # force caller to use keywords
     ivp::InitialValueProblem, stepSize::Float64, 
-    currentTime::Float64, currentVal::Float64, 
+    currentTime::Float64, currentVal::Vector{Float64}, 
     numStages::Int64, 
-    a::Matrix{Float64}, b::Vector{Float64}, c::Vector{Float64})::Float64
+    a::Matrix{Float64}, b::Vector{Float64}, c::Vector{Float64})::Vector{Float64}
 
     # verify that the first row is zero
     if !iszero(a[1, 1:end])
@@ -74,7 +72,7 @@ function rungeKuttaStepExplicit(; # force caller to use keywords
             RK methods, but an implicit coefficient matrix was passed."))
     end
 
-    k_vals = [ivp.diffEq(currentTime, currentVal)]
+    k_vals::Vector{Vector{Float64}} = [ivp.diffEq(currentTime, currentVal)]
 
     # iterate
     for s in 2:numStages
@@ -87,7 +85,12 @@ function rungeKuttaStepExplicit(; # force caller to use keywords
             throw(ArgumentError("Error: this function only supports explicit 
                 RK methods, but an implicit coefficient matrix was passed."))
         end
-        y_val = currentVal + stepSize * dot(a_vec, k_vals)
+
+        if length(a_vec) != length(k_vals)
+            throw(DimensionMismatch("Error: `a_vec` and `k_vals` must have the same number of elements!"))
+        end
+
+        y_val::Vector{Float64} = currentVal + stepSize * sum(a_vec .* k_vals)
 
         # evaluate ODE
         k_val = ivp.diffEq(time_val, y_val)
@@ -95,7 +98,7 @@ function rungeKuttaStepExplicit(; # force caller to use keywords
     end
 
     # compute weighted sum
-    return currentVal + stepSize * dot(b, k_vals)
+    return currentVal + stepSize * sum(b .* k_vals)
 end
 
 

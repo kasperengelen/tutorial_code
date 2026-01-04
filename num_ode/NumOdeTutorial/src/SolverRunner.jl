@@ -1,49 +1,116 @@
 
 using Plots
 
-include("./ODELib.jl")
-include("./IVPSolver.jl")
-
 """
-    solveAndPlot(;ivp::InitialValueProblem, solvers::Array{IVPSolver}, filenamePrefix::String)
+    transformTrajectory(trajectory::Vector{Vector{Float64}})::Vector{Vector{Float64}}
 
-    Solve the specified IVP using each of the specified IVP solvers and plot the resulting trajectories. 
-    Each trajectory will be labeled with the label of the respective solver.
-    
-    All filenames of the plots will be named with the specified filename prefix. There will be a "traj" plot
-    with the simulated trajectories, and a "steps" plot with the step-sizes.
+    This takes a trajectory where each element is a vector. Each such vector has one entry for
+    every dimension of the ODE.
+
+    The return value is a vector of trajectories. The vector has one element for each dimension of the ODE,
+    and each trajectory is a sequence of floats. Each float is the value of that specific dimension at the
+    respective time-step.
 """
-function solveAndPlot(;ivp::InitialValueProblem, solvers::Array{IVPSolver}, filenamePrefix::String)
+function transformTrajectory(trajectory::Vector{Vector{Float64}})::Vector{Vector{Float64}}
+    numDimensions = length(trajectory[1])
+    retval = [[] for _ in 1:numDimensions]
 
-    # run each solver
-    trajectories = [solver.solver(ivp) for solver in solvers]
-
-    # plot exact solution
-    if ivp.exactSolution !== nothing
-        # if an exact solution exists, we plot it
-        plot!(ivp.exactSolution, ivp.initialTime, ivp.endTime, label="Exact solution", dpi=500)
-    end
-
-    # plot for each solver
-    for (idx, solver) in enumerate(solvers)
-        trajectory = trajectories[idx]
-
-        if length(trajectory) <= 100
-            plot!(trajectory, markershape = :auto, label=solver.name, dpi=500, title="$(ivp.name): trajectories")
-        else
-            # plot no markers if there are too many points
-            plot!(trajectory, markershape = :none, label=solver.name, dpi=500, title="$(ivp.name): trajectories")
+    for stepIdx in 1:length(trajectory)
+        step = trajectory[stepIdx]
+        for dimension in 1:numDimensions
+            push!(retval[dimension], step[dimension])
         end
     end
-    savefig("$(filenamePrefix)_traj.png")
+
+    return retval
+end
+
+
+
+"""
+    Solve the given IVP using the different solvers and plot the indicated dimension.
+"""
+function plotAndCompareSolvers(;ivp::InitialValueProblem, solvers::Array{IVPSolver}, dimensionToPlot::Int64, filenamePrefix::String)
+    # plot exact solution
+    plot()  # this creates a new empty plot
+    if ivp.exactSolution !== nothing
+        # if an exact solution exists, we plot it
+        exactSolutionInDimension(t) = ivp.exactSolution(t)[dimensionToPlot]
+        plot!(exactSolutionInDimension, ivp.initialTime, ivp.endTime, label="Exact solution", dpi=500)
+    end
+
+    # run each solver
+    solverSolutions::Vector{IVPSolution} = [solver.solver(ivp) for solver in solvers]
+
+    # plot for each solver
+    plot()  # this creates a new empty plot
+    for (idx, solver) in enumerate(solvers)
+        solverSolution = solverSolutions[idx]
+        timeValues = solverSolution.timeValues
+        trajectories = transformTrajectory(solverSolution.trajectory)
+        trajectory = trajectories[dimensionToPlot]
+
+        if length(trajectory) <= 100
+            plot!(timeValues, trajectory, markershape = :auto, label=solver.name, dpi=500, title="$(ivp.name): trajectories dim=$(dimensionToPlot)")
+        else
+            # plot no markers if there are too many points
+            plot!(timeValues, trajectory, markershape = :none, label=solver.name, dpi=500, title="$(ivp.name): trajectories dim=$(dimensionToPlot)")
+        end
+    end
+    savefig("$(filenamePrefix)_dim$(dimensionToPlot)_traj.png")
 
     plot()  # this creates a new empty plot
     for (idx, solver) in enumerate(solvers)
-        trajectory = trajectories[idx]
-        timeValues = [step[1] for step in trajectory]
+        solverSolution = solverSolutions[idx]
+        timeValues = solverSolution.timeValues
         
         stepSizes = diff(timeValues)
         plot!(timeValues[1:end-1], stepSizes, markershape = :none, yaxis=:log10, label=solver.name, dpi=500, title="$(ivp.name): step-sizes")
     end
+    savefig("$(filenamePrefix)_dim$(dimensionToPlot)_steps.png")
+end
+
+"""
+    Plot all the dimensions of a system using one single solver method.
+"""
+function solveAndPlotSystem(;ivp::InitialValueProblem, solver::IVPSolver, filenamePrefix::String)
+
+    solution::IVPSolution = solver.solver(ivp)
+    trajectories = transformTrajectory(solution.trajectory)
+    timeValues = solution.timeValues
+    numDimensions = length(trajectories)
+
+     # plot exact solution
+    for dimension in 1:numDimensions
+        # compute exact solution in this specific dimension
+        exactSolutionInDimension(t) = ivp.exactSolution(t)[dimension]
+
+        if ivp.exactSolution !== nothing
+            # if an exact solution exists, we plot it
+            plot!(exactSolutionInDimension, ivp.initialTime, ivp.endTime, label="Exact solution", dpi=500)
+        end
+    end
+
+    # plot the trajectory for each dimension
+    for dimension in 1:numDimensions
+        dimensionLabel = ivp.labels[dimension]
+        trajectory = trajectories[dimension]
+        if length(trajectory) <= 100
+            plot!(timeValues, trajectory, markershape = :auto, label=dimensionLabel, dpi=500, title="$(ivp.name): trajectories")
+        else
+            # plot no markers if there are too many points
+            plot!(timeValues, trajectory, markershape = :none, label=dimensionLabel, dpi=500, title="$(ivp.name): trajectories")
+        end
+    savefig("$(filenamePrefix)_traj.png")
+    end
+
+    # plot the step sizes. These are the same for all dimensions
+    plot()  # this creates a new empty plot
+
+        
+    stepSizes = diff(timeValues)
+    plot!(timeValues[1:end-1], stepSizes, label="step size", markershape = :none, yaxis=:log10, dpi=500, title="$(ivp.name): step-sizes")
     savefig("$(filenamePrefix)_steps.png")
 end
+
+
