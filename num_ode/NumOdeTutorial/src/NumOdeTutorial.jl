@@ -187,6 +187,44 @@ function main()
             ), 
         filenamePrefix="rungeKuttaAdaptiveCosineStable")
 
+    elseif exampleName == "rungeKuttaAdaptiveLotkaVolterraA"
+        NumOdeTutorial.solveAndPlotSystem(
+            ivp=getLotkaVolterraODE(
+                # wikipedia: Lotka-Volterra
+                alpha=1.1,
+                beta=0.4,
+                gamma=0.4,
+                delta=0.1,
+            ), 
+            solver=RKF45(
+                atol=1e-5, 
+                initStepSize=5e-2,
+                minStepSize=0.00001,
+                maxStepSize=1.0,
+                minStepScale=0.1,
+                maxStepScale=4.0,
+            ), 
+        filenamePrefix="rungeKuttaAdaptiveLotkaVolterraA")
+    elseif exampleName == "rungeKuttaAdaptiveLotkaVolterraB"
+        NumOdeTutorial.solveAndPlotSystem(
+            ivp=getLotkaVolterraODE(
+                # https://mbe.modelica.university/behavior/equations/population/
+                alpha=0.1,
+                beta=0.02,
+                gamma=0.4,
+                delta=0.02,
+                initPreyDensity=10.0,
+                initPredatorDensity=10.0
+            ), 
+            solver=RKF45(
+                atol=1e-5, 
+                initStepSize=5e-2,
+                minStepSize=0.00001,
+                maxStepSize=1.0,
+                minStepScale=0.1,
+                maxStepScale=4.0,
+            ), 
+        filenamePrefix="rungeKuttaAdaptiveLotkaVolterraB")
     else
         println("Invalid example name '$(exampleName)'.")
         exit(1)
