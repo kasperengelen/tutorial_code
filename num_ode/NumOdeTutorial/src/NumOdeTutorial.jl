@@ -195,6 +195,8 @@ function main()
                 beta=0.4,
                 gamma=0.4,
                 delta=0.1,
+                initPreyDensity=10.0,
+                initPredatorDensity=10.0
             ), 
             solver=RKF45(
                 atol=1e-5, 

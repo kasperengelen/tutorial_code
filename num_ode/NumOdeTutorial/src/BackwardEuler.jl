@@ -18,8 +18,7 @@ function solveBackwardEuler(;ivp::InitialValueProblem, stepSize::Float64)::IVPSo
     currentTime::Float64 = ivp.initialTime
 
     # add initial condition to the list of output values
-    timeVals::Vector{Float64} = [currentTime]
-    funcVals::Vector{Vector{Float64}} = [currentVal]
+    solution = IVPSolution([currentTime], [currentVal])
 
     while (currentTime + stepSize) <= ivp.endTime
         # increase time from t_i to t_i+1
@@ -30,11 +29,11 @@ function solveBackwardEuler(;ivp::InitialValueProblem, stepSize::Float64)::IVPSo
         currentTime = nextTime
 
         # store value (t_i+1, y_i+1)
-        push!(timeVals, currentTime)
-        push!(funcVals, currentVal)
+        push!(solution.timeValues, currentTime)
+        push!(solution.trajectory, currentVal)
     end
 
-    return IVPSolution(timeVals, funcVals)
+    return solution
 end
 
 

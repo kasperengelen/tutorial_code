@@ -62,8 +62,7 @@ function solveRungeKuttaAdaptiveExplicit(; # force caller to use keywords
     currentTime::Float64 = ivp.initialTime
 
     # add initial condition to the list of output values
-    timeVals::Vector{Float64} = [currentTime]
-    funcVals::Vector{Vector{Float64}} = [currentVal]
+    solution = IVPSolution([currentTime], [currentVal])
 
     # we begin with the maximum step size, for efficiency
     stepSize = initStepSize
@@ -92,11 +91,11 @@ function solveRungeKuttaAdaptiveExplicit(; # force caller to use keywords
         stepSize = usedStepSize
 
         # store next value
-        push!(timeVals, currentTime)
-        push!(funcVals, currentVal)
+        push!(solution.timeValues, currentTime)
+        push!(solution.trajectory, currentVal)
     end
 
-    return IVPSolution(timeVals, funcVals)
+    return solution
 end
 
 

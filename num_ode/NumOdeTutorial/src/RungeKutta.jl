@@ -34,8 +34,7 @@ function solveRungeKuttaExplicit(; # force caller to use keywords
     currentTime::Float64 = ivp.initialTime
 
     # add initial condition to the list of output values
-    timeVals::Vector{Float64} = [currentTime]
-    funcVals::Vector{Vector{Float64}} = [currentVal]
+    solution = IVPSolution([currentTime], [currentVal])
 
     while (currentTime + stepSize) <= ivp.endTime
         # compute next value
@@ -45,11 +44,11 @@ function solveRungeKuttaExplicit(; # force caller to use keywords
         currentTime = currentTime + stepSize
 
         # store next value
-        push!(timeVals, currentTime)
-        push!(funcVals, currentVal)
+        push!(solution.timeValues, currentTime)
+        push!(solution.trajectory, currentVal)
     end
 
-    return IVPSolution(timeVals, funcVals)
+    return solution
 end
 
 

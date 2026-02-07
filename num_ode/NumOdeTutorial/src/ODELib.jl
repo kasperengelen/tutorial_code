@@ -200,7 +200,7 @@ function getLogisticODE(;
     ode(t, y) = [r*y[1]*(1-(y[1]/k))]
     exact(t) = [(p0*k*exp(r*t))/((k-p0) + p0*exp(r*t))]
     return InitialValueProblem(
-        "Logistic ODE (p0=$(p0), k=$(k), r=$(r))",
+        "Logistic ODE (p0=$(p0), \n k=$(k), r=$(r))",
         ode,
         [p0], # y0
         0.0, # t0
@@ -222,7 +222,7 @@ end
     y' = y(-gamma + delta*x)
     
     The following parameters are required:
-    - `alpha`: prey population growth rate (relative to the prey population),
+    - `alpha`: prey reproduction rate,
     - `beta`: rate at which predators consume the prey,
     - `gamma`: death rate of the predators,
     - `delta`: growth rate of the predator population (relative to the prey population),
@@ -242,7 +242,7 @@ function getLotkaVolterraODE(;
         y[2]*(-gamma + delta * y[1])
     ]
     return InitialValueProblem(
-        "Lotka-Volterra (alpha=$(alpha), beta=$(beta), gamma=$(gamma), delta=$(delta))",
+        "Lotka-Volterra (alpha=$(alpha), beta=$(beta), \n gamma=$(gamma), delta=$(delta))",
         ode,
         [initPreyDensity, initPredatorDensity], # y0
         0.0, # t0
