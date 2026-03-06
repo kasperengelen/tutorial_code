@@ -229,6 +229,7 @@ function _rungeKuttaWithErrorEstFixedStep_(; # force caller to use keywords
             RK methods, but an implicit coefficient matrix was passed."))
     end
 
+    # approximations of the ODE value at various points
     k_vals::Vector{Vector{Float64}} = [ivp.diffEq(currentTime, currentVal)]
 
     # compute the different stages

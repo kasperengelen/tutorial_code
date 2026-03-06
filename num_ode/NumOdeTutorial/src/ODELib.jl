@@ -251,3 +251,39 @@ function getLotkaVolterraODE(;
         ["Prey density", "Predator Density"]
     ) 
 end
+
+
+"""
+    Linear ODE that describes the interaction between Romeo and Juliet:
+
+    The following coefficients determine how attractions are influenced:
+    - a: Romeo -> Romeo
+    - b: Romeo -> Juliet
+    - c: Juliet -> Romeo
+    - d: Juliet -> Juliet
+
+    Source: https://sprott.physics.wisc.edu/pubs/paper277.pdf
+"""
+function getRomeoJulietODE(;
+    a::Float64,
+    b::Float64,
+    c::Float64,
+    d::Float64,
+    initR::Float64,
+    initJ::Float64,
+    finalTime::Float64
+)::InitialValueProblem
+    ode(t, y) = [
+        a * y[1] + c * y[2],
+        b * y[1] + d * y[2]
+    ]
+    return InitialValueProblem(
+        "Romeo and Juliet (a=$(a), b=$(b), \n c=$(c), d=$(d))",
+        ode,
+        [initR, initJ],
+        0.0,
+        finalTime,
+        nothing,
+        ["Romeo", "Juliet"]
+    )
+end

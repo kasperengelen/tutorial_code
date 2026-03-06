@@ -1,14 +1,14 @@
 
 module NumOdeTutorial
 
-include("./InitialValueProblem.jl")
-include("./ODELib.jl")
-include("./IVPSolver.jl")
-include("./SolverRunner.jl")
-include("./ForwardEuler.jl")
-include("./BackwardEuler.jl")
-include("./RungeKutta.jl")
-include("./RungeKuttaAdaptive.jl")
+include("../InitialValueProblem.jl")
+include("../ODELib.jl")
+include("../IVPSolver.jl")
+include("../SolverRunner.jl")
+include("../ForwardEuler.jl")
+include("../BackwardEuler.jl")
+include("../RungeKutta.jl")
+include("../RungeKuttaAdaptive.jl")
 
 """
     main()
@@ -128,7 +128,7 @@ function main()
     elseif exampleName == "compareRKCosineUnstable"
         NumOdeTutorial.plotAndCompareSolvers(ivp=getUnstableODEProblem(), 
         solvers=[ForwardEuler(0.5), ForwardEuler(0.1), RK2Midpoint(0.5), RK3Kutta(0.5), RK4Kutta(0.5)], 
-        filenamePrefix="compareRKCosineStable",
+        filenamePrefix="compareRKCosineUnstable",
         dimensionToPlot=1)
     
     elseif exampleName == "rungeKuttaAdaptiveExp"
@@ -142,7 +142,8 @@ function main()
                 minStepScale=0.1,
                 maxStepScale=4.0,
             ), 
-            filenamePrefix="rungeKuttaAdaptiveExp")
+            filenamePrefix="rungeKuttaAdaptiveExp"
+        )
     
     elseif exampleName == "rungeKuttaAdaptiveAbel"
         NumOdeTutorial.solveAndPlotSystem(
@@ -155,7 +156,8 @@ function main()
                 minStepScale=0.1,
                 maxStepScale=4.0,
             ), 
-            filenamePrefix="rungeKuttaAdaptiveAbel")
+            filenamePrefix="rungeKuttaAdaptiveAbel"
+        )
 
     elseif exampleName == "rungeKuttaAdaptiveLogistic"
         NumOdeTutorial.solveAndPlotSystem(
@@ -172,7 +174,8 @@ function main()
                 minStepScale=0.1,
                 maxStepScale=4.0,
             ), 
-            filenamePrefix="rungeKuttaAdaptiveLogistic")
+            filenamePrefix="rungeKuttaAdaptiveLogistic"
+        )
 
     elseif exampleName == "rungeKuttaAdaptiveCosineStable"
         NumOdeTutorial.solveAndPlotSystem(
@@ -185,7 +188,8 @@ function main()
                 minStepScale=0.1,
                 maxStepScale=4.0,
             ), 
-        filenamePrefix="rungeKuttaAdaptiveCosineStable")
+            filenamePrefix="rungeKuttaAdaptiveCosineStable"
+        )
 
     elseif exampleName == "rungeKuttaAdaptiveLotkaVolterraA"
         NumOdeTutorial.solveAndPlotSystem(
@@ -206,7 +210,9 @@ function main()
                 minStepScale=0.1,
                 maxStepScale=4.0,
             ), 
-        filenamePrefix="rungeKuttaAdaptiveLotkaVolterraA")
+            filenamePrefix="rungeKuttaAdaptiveLotkaVolterraA"
+        )
+
     elseif exampleName == "rungeKuttaAdaptiveLotkaVolterraB"
         NumOdeTutorial.solveAndPlotSystem(
             ivp=getLotkaVolterraODE(
@@ -226,7 +232,8 @@ function main()
                 minStepScale=0.1,
                 maxStepScale=4.0,
             ), 
-        filenamePrefix="rungeKuttaAdaptiveLotkaVolterraB")
+            filenamePrefix="rungeKuttaAdaptiveLotkaVolterraB"
+        )
     else
         println("Invalid example name '$(exampleName)'.")
         exit(1)

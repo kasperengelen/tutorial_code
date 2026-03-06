@@ -32,18 +32,18 @@ end
 """
 function plotAndCompareSolvers(;ivp::InitialValueProblem, solvers::Array{IVPSolver}, dimensionToPlot::Int64, filenamePrefix::String)
     # plot exact solution
-    plot()  # this creates a new empty plot
+    Plots.plot()  # this creates a new empty plot
     if ivp.exactSolution !== nothing
         # if an exact solution exists, we plot it
         exactSolutionInDimension(t) = ivp.exactSolution(t)[dimensionToPlot]
-        plot!(exactSolutionInDimension, ivp.initialTime, ivp.endTime, label="Exact solution", dpi=500)
+        Plots.plot!(exactSolutionInDimension, ivp.initialTime, ivp.endTime, label="Exact solution", dpi=500)
     end
 
     # run each solver
     solverSolutions::Vector{IVPSolution} = [solver.solver(ivp) for solver in solvers]
 
     # plot for each solver
-    plot()  # this creates a new empty plot
+    Plots.plot()  # this creates a new empty plot
     for (idx, solver) in enumerate(solvers)
         solverSolution = solverSolutions[idx]
         timeValues = solverSolution.timeValues
@@ -51,23 +51,23 @@ function plotAndCompareSolvers(;ivp::InitialValueProblem, solvers::Array{IVPSolv
         trajectory = trajectories[dimensionToPlot]
 
         if length(trajectory) <= 100
-            plot!(timeValues, trajectory, markershape = :auto, label=solver.name, dpi=500, title="$(ivp.name): trajectories dim=$(dimensionToPlot)")
+            Plots.plot!(timeValues, trajectory, markershape = :auto, label=solver.name, dpi=500, title="$(ivp.name): trajectories dim=$(dimensionToPlot)")
         else
             # plot no markers if there are too many points
-            plot!(timeValues, trajectory, markershape = :none, label=solver.name, dpi=500, title="$(ivp.name): trajectories dim=$(dimensionToPlot)")
+            Plots.plot!(timeValues, trajectory, markershape = :none, label=solver.name, dpi=500, title="$(ivp.name): trajectories dim=$(dimensionToPlot)")
         end
     end
     savefig("$(filenamePrefix)_dim$(dimensionToPlot)_traj.png")
 
-    plot()  # this creates a new empty plot
+    Plots.plot()  # this creates a new empty plot
     for (idx, solver) in enumerate(solvers)
         solverSolution = solverSolutions[idx]
         timeValues = solverSolution.timeValues
         
         stepSizes = diff(timeValues)
-        plot!(timeValues[1:end-1], stepSizes, markershape = :none, yaxis=:log10, label=solver.name, dpi=500, title="$(ivp.name): step-sizes")
+        Plots.plot!(timeValues[1:end-1], stepSizes, markershape = :none, yaxis=:log10, label=solver.name, dpi=500, title="$(ivp.name): step-sizes")
     end
-    savefig("$(filenamePrefix)_dim$(dimensionToPlot)_steps.png")
+    Plots.savefig("$(filenamePrefix)_dim$(dimensionToPlot)_steps.png")
 end
 
 """
@@ -87,7 +87,7 @@ function solveAndPlotSystem(;ivp::InitialValueProblem, solver::IVPSolver, filena
 
         if ivp.exactSolution !== nothing
             # if an exact solution exists, we plot it
-            plot!(exactSolutionInDimension, ivp.initialTime, ivp.endTime, label="Exact solution", dpi=500)
+            Plots.plot!(exactSolutionInDimension, ivp.initialTime, ivp.endTime, label="Exact solution", dpi=500)
         end
     end
 
@@ -96,21 +96,21 @@ function solveAndPlotSystem(;ivp::InitialValueProblem, solver::IVPSolver, filena
         dimensionLabel = ivp.labels[dimension]
         trajectory = trajectories[dimension]
         if length(trajectory) <= 100
-            plot!(timeValues, trajectory, markershape = :auto, label=dimensionLabel, dpi=500, title="$(ivp.name): trajectories")
+            Plots.plot!(timeValues, trajectory, markershape = :auto, label=dimensionLabel, dpi=500, title="$(ivp.name): trajectories")
         else
             # plot no markers if there are too many points
-            plot!(timeValues, trajectory, markershape = :none, label=dimensionLabel, dpi=500, title="$(ivp.name): trajectories")
+            Plots.plot!(timeValues, trajectory, markershape = :none, label=dimensionLabel, dpi=500, title="$(ivp.name): trajectories")
         end
     savefig("$(filenamePrefix)_traj.png")
     end
 
     # plot the step sizes. These are the same for all dimensions
-    plot()  # this creates a new empty plot
+    Plots.plot()  # this creates a new empty plot
 
         
     stepSizes = diff(timeValues)
-    plot!(timeValues[1:end-1], stepSizes, label="step size", markershape = :none, yaxis=:log10, dpi=500, title="$(ivp.name): step-sizes")
-    savefig("$(filenamePrefix)_steps.png")
+    Plots.plot!(timeValues[1:end-1], stepSizes, label="step size", markershape = :none, yaxis=:log10, dpi=500, title="$(ivp.name): step-sizes")
+    Plots.savefig("$(filenamePrefix)_steps.png")
 end
 
 
