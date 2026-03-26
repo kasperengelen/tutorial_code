@@ -65,3 +65,6 @@ Manifest.toml
 */**/Manifest.toml
 
 */**/.vscode/**/*
+*/**/.idea/**/*
+
+*/**/build/**/*
