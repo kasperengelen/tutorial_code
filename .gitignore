@@ -63,3 +63,5 @@ docs/site/
 # environment.
 Manifest.toml
 */**/Manifest.toml
+
+*/**/.vscode/**/*
